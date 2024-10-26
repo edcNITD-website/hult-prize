@@ -22,9 +22,9 @@
 }
 
 .customBadge {
-  position: relative;
-  left: 15px;
-  top: -11px;
+  /* position: relative; */
+  /* left: 15px; */
+  /* top: -11px; */
   background-color: rgb(230, 0, 127);
   border-radius: 3px;
   font-weight: 500;

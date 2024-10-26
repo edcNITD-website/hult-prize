@@ -5,6 +5,7 @@
   <title>Reset Password - Hult Prize</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  
   <style>
     .header {
       text-align: center;
@@ -12,16 +13,15 @@
       background-color: rgb(7, 15, 32);
       color: white;
       padding: 30px;
-      border-radius: 10px 10px 10px 10px;
+      border-radius: 10px;
       width: 55vw;
-      margin: 0px auto;
+      margin: 0 auto;
     }
-
 
     .card {
       border: 1px solid rgb(226, 226, 226);
       padding: 20px;
-      border-radius: 10px 10px 10px 10px;
+      border-radius: 10px;
       max-width: 40vw;
       margin: 20px auto;
       box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
@@ -35,6 +35,7 @@
       color: white;
       text-decoration: none;
       border-radius: 5px;
+      font-weight: bold;
     }
 
     .circle {
@@ -46,33 +47,13 @@
       justify-content: center;
     }
 
-    .circle:hover {
-      cursor: pointer;
-      color: white;
-      transition: all 500ms ease-in-out;
-    }
-
     .svg-icon {
       width: 1em;
       height: 1em;
     }
 
-    .svg-icon path,
-    .svg-icon polygon,
-    .svg-icon rect {
+    .svg-icon path, .svg-icon polygon, .svg-icon rect {
       fill: #4691f6;
-    }
-
-    .svg-icon circle {
-      stroke: #4691f6;
-      stroke-width: 1;
-    }
-
-    .imageContent {
-      display: flex;
-      align-items: center;
-      align-self: center;
-      justify-content: center;
     }
 
     body {
@@ -82,7 +63,6 @@
       display: grid;
       place-content: center;
       text-align: center;
-
     }
 
     .k-card {
@@ -94,20 +74,11 @@
 
     .welcome {
       background: radial-gradient(circle, rgba(255, 0, 98, 0.4) 0%, rgba(9, 9, 121, 0) 70%);
-      grid-column: 1/-1;
       background-color: rgb(7, 15, 32);
-      grid-row: 1/3;
-      grid-template-rows: subgrid;
-      grid-template-columns: subgrid;
-      display: grid;
       color: white;
       border-radius: 1rem;
       padding: 20px;
-    }
-
-    .welcome div {
-      padding-block: 1rem;
-      grid-column: 2/3;
+      grid-column: 1/-1;
     }
 
     .task {
@@ -121,12 +92,6 @@
       display: grid;
       gap: 2rem;
       padding: 20px;
-
-    }
-
-    .task a img {
-      max-width: 15rem;
-      border-radius: 10%;
     }
 
     .soc {
@@ -168,7 +133,6 @@
             ><img width="48" height="48" src="https://img.icons8.com/color/48/facebook-new.png" alt="facebook-new"/></a>
         </div>
         <div class="circle" id="insta">
-      display: grid;
           <a href="https://www.instagram.com/edc.nitd/" target="_blank" rel="noopener noreferrer"
             ><img width="48" height="48" src="https://img.icons8.com/fluency/48/instagram-new.png" alt="instagram-new"/></a>
         </div>
@@ -188,44 +152,56 @@
 <body>
   <main>
     <div class="k-card">
+      
       <div class="welcome">
-        <div class="">
-          <!-- <a href=""><img src="https://i.ibb.co/Np9Gx7S/navbar-logo.png" alt="edc1"></a> -->
+        <div>
           <a href=""><img width="192" src="https://i.ibb.co/pJ1dNs0/edc1.png" alt="edc1"></a>
-          <h2>
-            {{subject}}
-          </h2>
+          <h2>{{subject}}</h2>
         </div>
       </div>
+      
       <div class="task">
         <div class="b-card">
           <h4>Hello,</h4>
           <p>{{request}}</p>
+          
+          <!-- Step 1: Button for password reset link -->
           <p><a href="{{ link }}" style="text-decoration: none;font-weight: bolder;color: white;" class="button">{{ button_name }}</a></p>
-          <p>Best regards,<br><span style="font-weight: bold;">Team Entrepreneurship Development Cell (EDC NITD)</span>
-          </p>
-          <p style="padding-top:10px ;">Follow us on</p>
+          <p><a href="{{ link }}" style="color: #4691f6; text-decoration: underline;">{{ link }}</a></p>
+          
+          <!-- Step 2: Button for pre-registration link with accompanying text link -->
+          <p>Step 2: Before proceeding, pre-register for the Hult Prize:</p>
+          <p><a href="https://www.hultprize.org/startup-pre-registration-is-now-open/" style="text-decoration: none; font-weight: bolder; color: white;" class="button">Pre-Register for Hult Prize</a></p>
+          <p><a href="https://www.hultprize.org/startup-pre-registration-is-now-open/" style="color: #4691f6; text-decoration: underline;">https://www.hultprize.org/startup-pre-registration-is-now-open/</a></p>
+          
+          <p>Best regards,<br><span style="font-weight: bold;">Team Entrepreneurship Development Cell (EDC NITD)</span></p>
+          
+          <p style="padding-top:10px;">Follow us on</p>
           <div class="soc">
             <div class="circle" id="twitter">
-              <a href="https://twitter.com/edcnitd" target="_blank" rel="noopener noreferrer"><img width="48"
-                  height="48" src="https://img.icons8.com/fluency/48/twitter.png" alt="twitter" /></a>
+              <a href="https://twitter.com/edcnitd" target="_blank" rel="noopener noreferrer">
+                <img width="48" height="48" src="https://img.icons8.com/fluency/48/twitter.png" alt="twitter" />
+              </a>
             </div>
             <div class="circle" id="fb">
-              <a href="https://www.facebook.com/edc.nitd" target="_blank" rel="noopener noreferrer"><img width="48"
-                  height="48" src="https://img.icons8.com/color/48/facebook-new.png" alt="facebook-new" /></a>
+              <a href="https://www.facebook.com/edc.nitd" target="_blank" rel="noopener noreferrer">
+                <img width="48" height="48" src="https://img.icons8.com/color/48/facebook-new.png" alt="facebook-new" />
+              </a>
             </div>
             <div class="circle" id="insta">
-              <a href="https://www.instagram.com/edc.nitd/" target="_blank" rel="noopener noreferrer"><img width="48"
-                  height="48" src="https://img.icons8.com/fluency/48/instagram-new.png" alt="instagram-new" /></a>
+              <a href="https://www.instagram.com/edc.nitd/" target="_blank" rel="noopener noreferrer">
+                <img width="48" height="48" src="https://img.icons8.com/fluency/48/instagram-new.png" alt="instagram-new" />
+              </a>
             </div>
             <div class="circle" id="yt">
-              <a href="https://www.youtube.com/@entrepreneurshipdevelopmen7605" target="_blank"
-                rel="noopener noreferrer"><img width="48" height="48"
-                  src="https://img.icons8.com/color/48/youtube-play.png" alt="youtube-play" /></a>
+              <a href="https://www.youtube.com/@entrepreneurshipdevelopmen7605" target="_blank" rel="noopener noreferrer">
+                <img width="48" height="48" src="https://img.icons8.com/color/48/youtube-play.png" alt="youtube-play" />
+              </a>
             </div>
             <div class="circle" id="linkedin">
-              <a href="https://in.linkedin.com/company/edcnitd" target="_blank" rel="noopener noreferrer"><img
-                  width="48" height="48" src="https://img.icons8.com/fluency/48/linkedin.png" alt="linkedin" /></a>
+              <a href="https://in.linkedin.com/company/edcnitd" target="_blank" rel="noopener noreferrer">
+                <img width="48" height="48" src="https://img.icons8.com/fluency/48/linkedin.png" alt="linkedin" />
+              </a>
             </div>
           </div>
         </div>

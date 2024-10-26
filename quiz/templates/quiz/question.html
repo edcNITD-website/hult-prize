@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Question</title>
+</head>
+<body>
+    <h1>{{ question.question_text }}</h1>
+
+    {% if question.question_type == 'mcq' %}
+        <form method="post">
+            {% csrf_token %}
+            {% for choice in question.choices.all %}
+                <label>
+                    <input type="radio" name="choice" value="{{ choice.id }}">
+                    {{ choice.choice_text }}
+                </label><br>
+            {% endfor %}
+            <button type="submit">Submit Answer</button>
+        </form>
+    {% elif question.question_type == 'text' %}
+        <form method="post">
+            {% csrf_token %}
+            <textarea name="answer"></textarea><br>
+            <button type="submit">Submit Answer</button>
+        </form>
+    {% endif %}
+
+    <h2>Leaderboard</h2>
+    <ul>
+        {% for entry in leaderboard %}
+            <li>{{ entry.user.username }}: {{ entry.points }} points</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

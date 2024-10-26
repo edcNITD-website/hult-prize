@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Home</title>
+</head>
+<body>
+    <h1>Welcome to the Quiz</h1>
+    <p>Click the button below to start the quiz.</p>
+
+    <form action="{% url 'start_quiz' %}" method="get">
+        <button type="submit">Start Quiz</button>
+    </form>
+</body>
+</html>

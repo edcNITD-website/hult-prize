@@ -21,8 +21,10 @@
 /* Content */
 /*  */
 .container {
-  margin: auto;
+  margin-inline: auto;
+  margin-top: 100px;
   display: flex;
+  gap: 20px;
   width: 85%;
   justify-content: center;
   align-items: center;

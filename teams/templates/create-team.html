@@ -3,20 +3,14 @@
 {% block title %}Hult Prize - Create Team{% endblock title %}
 {% block css %}
 <style>
-  
   #preloader{
-  background: white no-repeat center center;
-  align-items: center;
-  justify-content: center;
-  display: flex;
+  background: white url("{%static 'assets/spinner-gif.gif' %}") no-repeat center center;
   background-size: 10%;
   z-index: 100;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   position: fixed;
-  
 }
-
 .burger {
   position: absolute;
   right: 15px;
@@ -56,11 +50,7 @@ input[readonly=""] {
 
 
 <!-- preloader -->
-<div id="preloader">
-  <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script> 
-
-    <dotlottie-player src="https://lottie.host/8ae3c606-6f7b-4e53-ab1a-4b7a7b1beed6/eVbvolOi7R.json" background="transparent" speed="1" style="width: 250px; height: 250px;" loop autoplay></dotlottie-player>
-</div>
+<div id="preloader"></div>
 
 <form action="/create-team" method="POST">
   {% csrf_token %}
@@ -146,7 +136,7 @@ input[readonly=""] {
 
   {% if team_members.count == 0 %}
   <div class="container bg-white my-4 border">
-    <span class="customBadge">Team Member 1</span>
+    <span class="customBadge">Team Member1</span>
     <div class="row">
       <div class="col">
         <div class="mb-3">
@@ -184,7 +174,7 @@ input[readonly=""] {
   </div>
 
   <div class="container bg-white my-4 border">
-    <span class="customBadge">Team Member 2</span>
+    <span class="customBadge">Team Member2</span>
     <div class="row">
       <div class="col">
         <div class="mb-3">
@@ -222,7 +212,7 @@ input[readonly=""] {
   </div>
 
   <div class="container bg-white my-4 border">
-    <span class="customBadge">Team Member 3</span>
+    <span class="customBadge">Team Member3</span>
     <div class="row">
       <div class="col">
         <div class="mb-3">

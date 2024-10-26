@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from teams import views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -22,5 +22,6 @@ urlpatterns = [
     path('verify/<auth_token>', views.verify, name="verify"),
     path('request-password-reset',views.forgotPassword,name="request_password_reset"),
     path('request-password-reset/confirm/<uidb64>/<token>/',views.reset_password_confirm,name="confirm_password_reset"),
-    path('reset-token', views.resettoken, name="reset-token")
+    path('reset-token', views.resettoken, name="reset-token"),
+    path('quiz/', include('quiz.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

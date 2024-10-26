@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Finished</title>
+</head>
+<body>
+    <h1>Quiz Finished!</h1>
+
+    <h2>Final Leaderboard</h2>
+    <ul>
+        {% for entry in leaderboard %}
+            <li>{{ entry.user.username }}: {{ entry.points }} points</li>
+        {% endfor %}
+    </ul>
+
+    <p>Thanks for participating!</p>
+</body>
+</html>

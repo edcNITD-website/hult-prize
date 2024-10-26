@@ -1,0 +1,14 @@
+<!-- templates/quiz/not_started.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Not Started</title>
+</head>
+<body>
+    <h1>{{ quiz.title }} hasn't started yet!</h1>
+    <p>The quiz will start at: {{ quiz.start_time }}</p>
+    <a href="{% url 'start_quiz' quiz.id %}">Refresh</a>
+</body>
+</html>
