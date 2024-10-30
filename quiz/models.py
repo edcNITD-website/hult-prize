@@ -1,43 +1,40 @@
 from django.db import models
+import uuid
 from django.contrib.auth.models import User
 from django.utils.timezone import now
-from jsonfield import JSONField  # JSON field for crossword grids and clues
+class BaseModel(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4())
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-# Question Model
-class Question(models.Model):
+    class Meta:
+        abstract = True
+
+class Category(BaseModel):
+    category_name = models.CharField(max_length=255)
+class Question(BaseModel):
+
     TEXT = 'text'
     MCQ = 'mcq'
-    CROSSWORD = 'crossword'
 
     QUESTION_TYPE_CHOICES = [
         (TEXT, 'Text Input'),
         (MCQ, 'Multiple Choice'),
-        (CROSSWORD, 'Crossword')
     ]
-
-    question_text = models.TextField()  # Question prompt
+    
+    category=models.ForeignKey(Category,related_name='category',on_delete=models.CASCADE)
+    question_text = models.TextField()
     question_type = models.CharField(max_length=10, choices=QUESTION_TYPE_CHOICES)
-    correct_answer = models.TextField(blank=True, null=True)  # Store correct answer (for MCQ or Text)
+    marks = models.IntegerField(default=10)
+    correct_answer = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.question_text
 
-# Crossword Model
-class Crossword(models.Model):
-    question = models.OneToOneField(Question, on_delete=models.CASCADE, related_name='crossword')
-    grid = JSONField()  # JSONField for storing crossword grid
-    across_clues = JSONField()  # JSONField for across clues
-    down_clues = JSONField()  # JSONField for down clues
-    solution = JSONField()  # Store the correct solution as a JSON map of coordinates to letters
-
-    def __str__(self):
-        return f"Crossword for Question: {self.question.id}"
-
-# MCQ Choice Model
-class Choice(models.Model):
+class Choice(BaseModel):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='choices')
     choice_text = models.CharField(max_length=200)
-    is_correct = models.BooleanField(default=False)  # Identify correct option
+    is_correct = models.BooleanField(default=False)
 
     def __str__(self):
         return self.choice_text
@@ -48,7 +45,6 @@ class UserResponse(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     answer_text = models.TextField(blank=True, null=True)  # For text-based answers
     selected_choice = models.ForeignKey(Choice, blank=True, null=True, on_delete=models.CASCADE)  # For MCQ
-    crossword_solution = JSONField(blank=True, null=True)  # Store user’s crossword solution as a JSON object
     submission_time = models.DateTimeField(default=now)  # Capture when user submitted answer
 
     def __str__(self):

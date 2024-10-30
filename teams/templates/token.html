@@ -1,33 +1,85 @@
-{% extends 'base.html' %}
-{% block title %}Hult Prize{% endblock title%} 
-{%block css %}
-<style>
-  #preloader{
-  background-color: white;
-  align-items: center;
-  justify-content: center;
-  display: flex;
-  z-index: 100;
-  height: 100vh;
-  width: 100vw;
-  position: fixed;
-  
-}
-  .container {
-    margin-top: 90px;
-    padding: 1.5rem;
-    text-align: center;
-  }
-  .navbar-resp {
-    position: relative;
-  }
-  p {
-    margin-top: 10px;
-  }
-</style>
-{% endblock css %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hult Prize</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="icon" type="image/x-icon" href="{% static 'assets/favicon.ico' %}">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/home.css' %}" />
+    <style>
+      #preloader {
+        background-color: white;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        z-index: 100;
+        height: 100vh;
+        width: 100vw;
+        position: fixed;
+      }
 
-{% block body %}
+      .navbar {
+        top: 0; 
+        left: 0; 
+        right: 0; 
+        z-index: 1000; 
+        background-color: white; 
+        padding: 10px 20px; 
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        padding-top: 70px; 
+      }
+
+      .container {
+        margin-top: 90px;
+        padding: 1.5rem;
+        text-align: center;
+      }
+
+      p {
+        margin-top: 10px;
+      }
+
+      /* Responsive styles */
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem; /* Reduce padding on smaller screens */
+        }
+
+        h3 {
+          font-size: 1.5em; /* Adjust font size for smaller screens */
+        }
+
+        p {
+          font-size: 1em; /* Adjust font size for smaller screens */
+        }
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          margin-top: 60px; /* Reduce margin on smaller devices */
+          padding: 0.5rem; /* Further reduce padding */
+        }
+
+        h3 {
+          font-size: 1.2em; /* Smaller font size */
+        }
+      }
+    </style>
+  </head>
+
+  <body>
 <!-- preloader -->
 <div id="preloader">
   <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script> 
@@ -41,5 +93,140 @@
   </h3>
   <p>(Please check your spam folder)</p>
 </div>
-{% endblock body %}
+          
+    <!-- opacity -->
+    <div id="opacity"></div>
 
+    <!-- navbar -->
+    <nav class="navbar">
+      <div class="leftNavBar">
+        <a href="/"><img src="{% static 'assets/navbar logo.png' %}" /></a>
+      </div>
+      <div class="rightNavBar">
+        <a href="/" class="activelink leftBorder">Home</a>
+        <a href="https://www.edcnitd.co.in/" target="_blank" rel="noopener noreferrer">EDC</a>
+        <a href="/speakers">Speakers</a>
+        
+        {% if user.is_authenticated %}
+        <a href="/quiz">Quiz</a>
+        <a href="/team">Team</a>
+        <a href="javascript: document.logoutForm.submit()" type="submit">Logout</a>
+        {% else %}
+        <a href="/login">Login</a>
+        {% endif %}
+      </div>
+      <div class="burger" id="burger">
+        <div class="line" id="line-1"></div>
+        <div class="line" id="line-2"></div>
+        <div class="line" id="line-3"></div>
+      </div>
+    </nav>
+
+    <!-- responsive navbar -->
+    <nav id="navbar-resp" class="navbar-resp visible">
+      <div>
+        <a href="/" class="activelink-resp">Home</a>
+        <a href="/speakers">Speakers</a>
+        <a href="https://www.edcnitd.co.in/" target="_blank" rel="noopener noreferrer">EDC</a>
+
+        {% if user.is_authenticated %}
+        <a href="/quiz">Quiz</a>
+        <a href="/team">Team</a>
+        <a href="javascript: document.logoutForm.submit()" type="submit">Logout</a>
+        {% else %}
+        <a href="/login">Login</a>
+        {% endif %}
+      </div>
+    </nav>
+
+    <form action="/logout" method="POST" name="logoutForm">
+      {% csrf_token %}
+    </form>
+
+    <footer class="footer">
+      <div class="leftFooter">
+        <div class="leftFooterContent">
+          <h2>
+            Entrepreneurship <br />
+            Development Cell
+          </h2>
+          <h3>NIT Durgapur</h3>
+        </div>
+        <p>
+          Made with <i class="fa fa-heart" aria-hidden="true"></i> by Web-Team
+          <br />© 2024 EDC. All Rights Reserved.
+        </p>
+      </div>
+      <div class="middleFooter">
+        <div class="bottomBorder">
+          <h2>CONTACT US</h2>
+        </div>
+        <p>
+          <i class="fa-solid fa-map-pin"></i>&nbsp;: Mahatma Gandhi Avenue,<br />
+          A-Zone, Durgapur, West Bengal <br />
+          Durgapur: 713209
+          <br />
+          <i class="fa-solid fa-phone"></i>&nbsp;: +91 72598 68646(Kshitiz)
+          <br>
+          <i class="fa-solid fa-phone"></i>&nbsp;: +91 93466 83039(Ekta)
+          <br />
+          <i class="fa-solid fa-envelope"></i>&nbsp;: edc@nitdgp.ac.in
+        </p>
+        <br>
+        <div class="socials">
+          <div class="circle" id="twitter">
+            <a href="https://twitter.com/edcnitd" target="_blank" rel="noopener noreferrer"
+              ><i id="twitter-icon" class="fa-brands fa-x-twitter"></i
+            ></a>
+          </div>
+          <div class="circle" id="fb">
+            <a href="https://www.facebook.com/edc.nitd" target="_blank" rel="noopener noreferrer"
+              ><i id="fb-icon" class="fa-brands fa-facebook"></i
+            ></a>
+          </div>
+          <div class="circle" id="insta">
+            <a href="https://www.instagram.com/edc.nitd/" target="_blank" rel="noopener noreferrer"
+              ><i id="insta-icon" class="fa-brands fa-instagram"></i
+            ></a>
+          </div>
+          <div class="circle" id="yt">
+            <a href="https://www.youtube.com/@entrepreneurshipdevelopmen7605" target="_blank" rel="noopener noreferrer"
+              ><i id="yt-icon" class="fa-brands fa-youtube"></i
+            ></a>
+          </div>
+          <div class="circle" id="linkedin">
+            <a href="https://in.linkedin.com/company/edcnitd" target="_blank" rel="noopener noreferrer"
+              ><i id="linkedin-icon" class="fa-brands fa-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="rightFooter">
+        <div class="bottomBorder">
+          <h2>USEFUL LINKS</h2>
+        </div>
+        <div class="usefulLinks">
+          <!-- <ul>
+            <li><a href="/faqs" rel="noopener noreferrer">FAQs</a></li>
+          </ul> -->
+          <ul>
+            <li><a href="/" rel="noopener noreferrer">Home</a></li>
+          </ul>
+          <ul>
+            <li>
+              <a href="https://www.edcnitd.co.in/" target="_blank" rel="noopener noreferrer">EDC</a>
+            </li>
+          </ul>
+          <ul>
+            <li><a href="/signup" rel="noopener noreferrer">Register</a></li>
+          </ul>
+          <ul>
+            <li><a href="/login" rel="noopener noreferrer">Login</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+    
+    <script src="{% static 'js/navbar.js' %}"></script>
+    {% block script %}{% endblock script %}
+  </body>
+</html>

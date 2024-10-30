@@ -1,35 +1,199 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Question</title>
-</head>
-<body>
-    <h1>{{ question.question_text }}</h1>
+{% extends 'base.html' %}
+{% load static %}
+{% block css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;800;900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Teko:wght@300..700&display=swap');
+    
+    .question-page {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
 
-    {% if question.question_type == 'mcq' %}
+    .question-container {
+        margin-top: 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        width: 80vw;
+        gap: 20px;
+        /* background-color: aliceblue; */
+        border-radius: 10px;
+        padding: 50px 30px;
+    }
+
+    .choice-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 10px;
+        width: 70vw;
+        padding-bottom: 20px;
+    }
+
+    .choice {
+        padding: 10px;
+        /* border: 2px solid grey; */
+        background-color: white;
+        color: black;
+        font-family: "Prompt";
+        border-radius: 10px;
+        /* box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); */
+        cursor: pointer;
+        font-size: 1.25rem;
+    }
+
+    .choice:hover {
+        border-color: black;
+    }
+
+    .submit-answer {
+        border: none;
+        background-color: #e6007f;
+        cursor: pointer;
+        padding: 5px;
+        font-size: large;
+        padding: 10px 30px;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+    }
+
+    .submit-answer:hover {
+        background-color: #fd008b;
+    }
+
+    .choice input[type="radio"] {
+        display: none;
+    }
+
+    .choice input[type="radio"]:checked+.choice {
+        background-color: #d1e7ff;
+        color: black;
+        font-weight: bold;
+    }
+
+    body {
+        /* /* background-image: url('https://wallpaperaccess.com/full/1092611.jpg'); */
+        background-image: url('https://images.unsplash.com/photo-1554050857-c84a8abdb5e2?q=80&w=1527&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+        background-size: cover;
+        background-repeat: no-repeat;
+        animation: scrollDown 120s linear forwards;
+        */
+        /* background-color: black; */
+    }
+
+    @keyframes scrollDown {
+        from {
+            background-position: top center;
+        }
+
+        to {
+            background-position: bottom center;
+        }
+    }
+
+    .question-text {
+        font-family: "Prompt";
+        font-weight: 800;
+    }
+
+    @media (max-width: 600px) {
+        .question-container {
+            width: 95vw;
+            padding: 30px 20px;
+        }
+
+        .question-text {
+            font-size: 1.5rem;
+        }
+
+        .choice-container {
+            width: 90vw;
+            grid-template-columns: 1fr;
+            grid-template-rows: repeat(4, 1fr);
+        }
+
+        .choice {
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+
+        .submit-answer {
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+    }
+
+    .leaderboard-link {
+        color: white;
+        text-decoration: none;
+        transition: text-decoration 0.3s ease;
+    }
+
+    .leaderboard-link:hover {
+        text-decoration: underline;
+    }
+
+    .arrow {
+        display: inline-block;
+        transition: transform 0.3s ease;
+    }
+
+    .leaderboard-link:hover .arrow {
+        transform: translateX(10px);
+    }
+
+    .button-leaderboard-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        padding: 0 10px;
+    }
+</style>
+{% endblock css %}
+{% block body %}
+<main class="question-page">
+    <div class="question-container">
+        <!-- TODO: add question number  -->
+        <h1 class="question-text">{{ question.question_text }}</h1>
+
+        {% if question.question_type == 'mcq' %}
         <form method="post">
             {% csrf_token %}
-            {% for choice in question.choices.all %}
-                <label>
+            <div class="choice-container">
+                {% for choice in question.choices.all %}
+                <label class="choice">
                     <input type="radio" name="choice" value="{{ choice.id }}">
-                    {{ choice.choice_text }}
-                </label><br>
-            {% endfor %}
-            <button type="submit">Submit Answer</button>
+                    <span>{{ choice.choice_text }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            <div class="button-leaderboard-container">
+                <a href="" class="leaderboard-link">leaderboard <span class="arrow">→</span></a>
+                <button type="submit" class="submit-answer">Submit Answer</button>
+            </div>
         </form>
-    {% elif question.question_type == 'text' %}
+        {% elif question.question_type == 'text' %}
         <form method="post">
             {% csrf_token %}
             <textarea name="answer"></textarea><br>
-            <button type="submit">Submit Answer</button>
+            <button class="submit-answer" type="submit">Submit Answer</button>
         </form>
-    {% endif %}
+        {% endif %}
 
-    <h2>Leaderboard</h2>
-    <ul>
-        {% for entry in leaderboard %}
+
+        <!-- <h2>Leaderboard</h2>
+        <ul>
+            {% for entry in leaderboard %}
             <li>{{ entry.user.username }}: {{ entry.points }} points</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+            {% endfor %}
+        </ul> -->
+    </div>
+</main>
+{% endblock body %}
