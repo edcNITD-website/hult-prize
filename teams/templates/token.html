@@ -15,8 +15,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="{% static 'css/navbar.css' %}" />
     <link rel="stylesheet" href="{% static 'css/home.css' %}" />
+    
     <style>
-      #preloader {
+
+#preloader{
         background-color: white;
         align-items: center;
         justify-content: center;
@@ -42,9 +44,17 @@
       }
 
       .container {
+        display: flex;
+        flex-direction: column; 
+        align-items: center; 
         margin-top: 90px;
         padding: 1.5rem;
         text-align: center;
+      }
+      
+      .spam-check {
+        text-align: left;
+        margin-top: 0; 
       }
 
       p {
@@ -86,12 +96,13 @@
 
     <dotlottie-player src="https://lottie.host/8ae3c606-6f7b-4e53-ab1a-4b7a7b1beed6/eVbvolOi7R.json" background="transparent" speed="1" style="width: 250px; height: 250px;" loop autoplay></dotlottie-player>
 </div>
+
 <div class="container">
   <h3>
-    Please click on the link send to your registered email to activate your
+    Please click on the link sent to your registered email to activate your
     account
   </h3>
-  <p>(Please check your spam folder)</p>
+  <p class="spam-check">(Please check your spam folder)</p>
 </div>
           
     <!-- opacity -->
