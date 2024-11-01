@@ -1,9 +1,10 @@
-{% extends 'base.html' %}
 {% load static %}
+
 {% block css %}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;800;900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Teko:wght@300..700&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;800;900&family=Poppins:wght@400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;800;900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Teko:wght@300..700&display=swap');
+
     .question-page {
         height: 100vh;
         display: flex;
@@ -13,7 +14,7 @@
     }
 
     .question-container {
-        margin-top: 50px;
+        margin-top: 20px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -21,9 +22,39 @@
         text-align: center;
         width: 80vw;
         gap: 20px;
-        /* background-color: aliceblue; */
         border-radius: 10px;
         padding: 50px 30px;
+    }
+
+    .choice-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        width: 70vw;
+        padding-bottom: 20px;
+    }
+
+    .submit-answer:disabled {
+        background-color: grey;
+        cursor: not-allowed;
+    }
+
+    #countdown {
+        font-size: 20px;
+        margin-bottom: 10px;
+        font-weight: 700;
+        color: gold;
+    }
+
+    #countdown.flashing {
+        color: red;
+        animation: flash 1s steps(2) infinite;
+    }
+
+    @keyframes flash {
+        50% {
+            opacity: 0;
+        }
     }
 
     .choice-container {
@@ -67,23 +98,12 @@
         background-color: #fd008b;
     }
 
-    .choice input[type="radio"] {
-        display: none;
-    }
-
-    .choice input[type="radio"]:checked+.choice {
-        background-color: #d1e7ff;
-        color: black;
-        font-weight: bold;
-    }
-
     body {
         /* /* background-image: url('https://wallpaperaccess.com/full/1092611.jpg'); */
         background-image: url('https://images.unsplash.com/photo-1554050857-c84a8abdb5e2?q=80&w=1527&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
         background-size: cover;
         background-repeat: no-repeat;
         animation: scrollDown 120s linear forwards;
-        */
         /* background-color: black; */
     }
 
@@ -97,10 +117,7 @@
         }
     }
 
-    .question-text {
-        font-family: "Prompt";
-        font-weight: 800;
-    }
+
 
     @media (max-width: 600px) {
         .question-container {
@@ -155,45 +172,114 @@
         margin-top: 10px;
         padding: 0 10px;
     }
+
+    .question-text {
+        font-family: "Prompt";
+        font-weight: 800;
+    }
+
+    .timer {
+        font-size: 0.1rem;
+    }
+    .answer-section * {
+        font-family: "Roboto";
+        }
 </style>
 {% endblock css %}
+
 {% block body %}
 <main class="question-page">
     <div class="question-container">
-        <!-- TODO: add question number  -->
         <h1 class="question-text">{{ question.question_text }}</h1>
+        <div id="countdown" class="timer">{{ time_remaining }} SECONDS</div> <!-- Countdown timer -->
 
         {% if question.question_type == 'mcq' %}
-        <form method="post">
+        <form id="question-form" method="post">
             {% csrf_token %}
+            <input type="hidden" name="time_remaining" id="time_remaining" value="{{ time_remaining }}">
             <div class="choice-container">
                 {% for choice in question.choices.all %}
                 <label class="choice">
-                    <input type="radio" name="choice" value="{{ choice.id }}">
+                    <input type="radio" name="choice" value="{{ choice.id }}" onchange="enableSubmitButton()">
                     <span>{{ choice.choice_text }}</span>
                 </label>
                 {% endfor %}
             </div>
             <div class="button-leaderboard-container">
-                <a href="" class="leaderboard-link">leaderboard <span class="arrow">→</span></a>
-                <button type="submit" class="submit-answer">Submit Answer</button>
+                <a href="{% url 'leaderboard' %}" class="leaderboard-link">leaderboard <span class="arrow">→</span></a>
+                <button type="submit" id="submit-button" class="submit-answer" disabled>Submit Answer</button>
             </div>
         </form>
         {% elif question.question_type == 'text' %}
-        <form method="post">
+        <form id="question-form" method="post">
             {% csrf_token %}
-            <textarea name="answer"></textarea><br>
-            <button class="submit-answer" type="submit">Submit Answer</button>
+            <input type="hidden" name="time_remaining" id="time_remaining" value="{{ time_remaining }}">
+            <textarea name="answer" style="width: 100%; padding: 10px; border-radius: 10px; font-size: 1.1rem;" oninput="enableSubmitButton()" required></textarea><br>
+            <button class="submit-answer" id="submit-button" type="submit" enabled>Submit Answer</button>
         </form>
         {% endif %}
 
-
-        <!-- <h2>Leaderboard</h2>
-        <ul>
-            {% for entry in leaderboard %}
-            <li>{{ entry.user.username }}: {{ entry.points }} points</li>
-            {% endfor %}
-        </ul> -->
+        <!-- Correct answer and explanation sections, initially hidden -->
+        <div id="correct-answer-section" class="answer-section" style="display: none;">
+            <h3>Current Points:<span style="color: gold">{{points}}</span></h3>
+            <h3>Correct Answer:</h3>
+            <p>{{ correct_answer }}</p>
+            <h3>Explanation:</h3>
+            <p>{{ explanation }}</p>
+        </div>
     </div>
 </main>
+
+
+<script>
+    // Countdown Timer
+    let timeRemaining = {{ time_remaining }};
+    const countdownElement = document.getElementById('countdown');
+    const correctAnswerSection = document.getElementById('correct-answer-section');
+    const submitButton = document.getElementById('submit-button');
+
+    const interval = setInterval(() => {
+        if (timeRemaining <= 0) {
+            clearInterval(interval);
+            // Show the correct answer and explanation
+            correctAnswerSection.style.display = 'block';
+            submitButton.disabled = true; // Disable the submit button
+
+            // Delay redirection to the next question for 5 seconds
+            setTimeout(() => {
+                {% if next_question %}
+                    window.location.href = "{% url 'quiz:display_question' next_question.id %}";
+                {% else %}
+                    window.location.href = "{% url 'quiz:quiz_finished' %}";
+                {% endif %}
+            }, 5000);
+        } else {
+            countdownElement.textContent = `${timeRemaining--} SECONDS`;
+        }
+    }, 1000);
+
+    function enableSubmitButton() {
+        const submitButton = document.getElementById('submit-button');
+        const radioButtons = document.querySelectorAll('input[name="choice"]');
+        const textarea = document.querySelector('textarea[name="answer"]');
+
+        const isRadioSelected = Array.from(radioButtons).some(radio => radio.checked);
+        const isTextFilled = textarea && textarea.value.trim() !== '';
+
+        submitButton.disabled = !(isRadioSelected || isTextFilled);
+    }
+
+    // Prevent multiple submissions
+    document.getElementById('question-form').addEventListener('submit', function (event) {
+        document.getElementById('submit-button').disabled = true;  // Disable the button to prevent multiple submissions
+    });
+
+    // Prevent the browser back button
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = function () {
+        window.history.go(1);
+    };
+    
+</script>
+
 {% endblock body %}

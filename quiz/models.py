@@ -3,7 +3,7 @@ import uuid
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 class BaseModel(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4())
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -12,6 +12,9 @@ class BaseModel(models.Model):
 
 class Category(BaseModel):
     category_name = models.CharField(max_length=255)
+    def __str__(self) -> str:
+        return self.category_name
+    
 class Question(BaseModel):
 
     TEXT = 'text'
@@ -22,13 +25,14 @@ class Question(BaseModel):
         (MCQ, 'Multiple Choice'),
     ]
     
-    category=models.ForeignKey(Category,related_name='category',on_delete=models.CASCADE)
+    category=models.ForeignKey(Category, related_name='category',on_delete=models.CASCADE)
     question_text = models.TextField()
     question_type = models.CharField(max_length=10, choices=QUESTION_TYPE_CHOICES)
     marks = models.IntegerField(default=10)
     correct_answer = models.TextField(blank=True, null=True)
+    explanation = models.TextField(blank=True, null=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.question_text
 
 class Choice(BaseModel):
@@ -36,24 +40,23 @@ class Choice(BaseModel):
     choice_text = models.CharField(max_length=200)
     is_correct = models.BooleanField(default=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.choice_text
 
-# User Response Model
+
 class UserResponse(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    answer_text = models.TextField(blank=True, null=True)  # For text-based answers
-    selected_choice = models.ForeignKey(Choice, blank=True, null=True, on_delete=models.CASCADE)  # For MCQ
-    submission_time = models.DateTimeField(default=now)  # Capture when user submitted answer
+    answer_text = models.TextField(blank=True, null=True)
+    selected_choice = models.ForeignKey(Choice, blank=True, null=True, on_delete=models.CASCADE)
+    submission_time = models.DateTimeField(default=now)  
 
     def __str__(self):
         return f'{self.user} - {self.question}'
 
-# Leaderboard Model
 class Leaderboard(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)  # One entry per user
-    points = models.IntegerField(default=0)  # Default points set to 0
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    points = models.IntegerField(default=0)
 
     def __str__(self):
         return f'{self.user.username}: {self.points} points'

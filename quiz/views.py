@@ -1,110 +1,107 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils.timezone import now
+from django.utils import timezone
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Question, UserResponse, Choice, Leaderboard
-import json
+from .models import *
 from datetime import datetime, timedelta
+import pytz
 
-MAX_POINTS = 10  # Maximum points for a question
-QUESTION_DURATION_MS = 10 * 60 * 1000  # 10 minutes in milliseconds
+IST = pytz.timezone('Asia/Kolkata')
+QUIZ_START_TIME = IST.localize(datetime(2024, 11, 1, 19, 30, 0))  # Set Time for the Quiz 
+QUESTION_DURATION = 90  # Set question duration in seconds
+MAX_POINTS = 100  # Set the Points
 
-# Home page for quiz
 def quiz_home(request):
     return render(request, 'quiz/quiz_home.html')
 
-# Function to get the next unanswered question for the user
-#def get_next_question(user, start_time):
-#     # Calculate how many questions have passed based on elapsed time
-#     questions_passed = (now() - start_time) // timedelta(milliseconds=QUESTION_DURATION_MS)
-#     answered_questions = UserResponse.objects.filter(user=user).values_list('question', flat=True)
-#     questions = Question.objects.all().order_by('id').exclude(id__in=answered_questions)  # Unanswered questions
-#     return questions[questions_passed:].first()  # Return next available question
+def get_next_question(user):
+    answered_questions = UserResponse.objects.filter(user=user).values_list('question', flat=True)
+    questions = Question.objects.all().order_by('id').exclude(id__in=answered_questions)
 
-# # Start the quiz
-# @login_required
-# def start_quiz(request):
-#     # Store the quiz start time in the session for this user
-#     request.session['quiz_start_time'] = now().isoformat()
-#     next_question = get_next_question(request.user, now())  # Use current time for the first question
-#     if not next_question:
-#         return redirect('quiz_finished')
-#     return redirect('display_question', question_id=next_question.id)
+    if not questions:
+        return None
+    
+    return questions[0] 
 
-# # Display a question and handle responses
-# @login_required
-# def display_question(request, question_id):
-#     question = get_object_or_404(Question, id=question_id)
+@login_required
+def start_quiz(request):
+    current_time = timezone.now()
+    quiz_title = "Quiz"
+    quiz_start_time = QUIZ_START_TIME.strftime("%Y-%m-%d %H:%M:%S")
 
-#     # Retrieve start time from session or set it to the current time if not found
-#     start_time_str = request.session.get('quiz_start_time')
-#     start_time = datetime.fromisoformat(start_time_str) if start_time_str else now()
+    if current_time < QUIZ_START_TIME:
+        return render(request, 'quiz/not_started.html', {
+            'quiz': {
+                'title': quiz_title,
+                'start_time': quiz_start_time,
+            }
+        })
 
-#     # Calculate elapsed time since start and determine questions passed
-#     time_since_start = now() - start_time
-#     questions_passed = time_since_start // timedelta(milliseconds=QUESTION_DURATION_MS)
+    first_question = get_next_question(request.user)
+    if first_question:
+        return redirect('quiz:display_question', question_id=first_question.id)
+    else:
+        return redirect('quiz_finished')
 
-#     # Check if the question has passed based on elapsed time
-#     question_position = list(Question.objects.all().order_by('id')).index(question)
-#     if question_position < questions_passed:
-#         return redirect('quiz_finished')
+@login_required
+def display_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    questions = Question.objects.all().order_by('id')
+    question_index = list(questions).index(question)
 
-#     if request.method == 'POST':
-#         time_answered = now()  # Time when the user submits the answer
-#         time_elapsed = (time_answered - start_time).total_seconds() * 1000  # Convert to milliseconds
-#         time_left = max(QUESTION_DURATION_MS - time_elapsed, 0)  # Ensure no negative times
-#         points_earned = MAX_POINTS * (time_left / QUESTION_DURATION_MS)
+    question_start_time = QUIZ_START_TIME + timedelta(seconds=QUESTION_DURATION * question_index)
+    time_remaining = max(0, QUESTION_DURATION - int((timezone.now() - question_start_time).total_seconds()))
 
-#         # Handle responses for each question type
-#         if question.question_type == 'mcq':
-#             selected_choice = get_object_or_404(Choice, id=request.POST.get('choice'))
-#             UserResponse.objects.create(user=request.user, question=question, selected_choice=selected_choice, submission_time=time_answered)
-#             if selected_choice.is_correct:
-#                 update_leaderboard_points(request.user, points_earned)
-#         elif question.question_type == 'crossword':
-#             user_solution = json.loads(request.POST.get('crossword_solution'))
-#             UserResponse.objects.create(user=request.user, question=question, crossword_solution=user_solution, submission_time=time_answered)
-#             # Compare user solution with the correct solution stored in the crossword
-#             if user_solution == question.crossword.solution:
-#                 update_leaderboard_points(request.user, points_earned)
-#         else:
-#             user_answer = request.POST.get('answer')
-#             UserResponse.objects.create(user=request.user, question=question, answer_text=user_answer, submission_time=time_answered)
-#             if user_answer == question.correct_answer:
-#                 update_leaderboard_points(request.user, points_earned)
+    if time_remaining == 0:
+        next_question = questions[question_index + 1] if question_index + 1 < len(questions) else None
+        if next_question:
+            return redirect('quiz:display_question', question_id=next_question.id)
+        else:
+            return redirect('quiz_finished')
 
-#         # Get the next question
-#         next_question = get_next_question(request.user, start_time)
-#         if next_question:
-#             return redirect('display_question', question_id=next_question.id)
-#         else:
-#             return redirect('quiz_finished')
+    if request.method == 'POST' and not UserResponse.objects.filter(user=request.user, question=question).exists():
+        points = max(0, int((time_remaining / QUESTION_DURATION) * MAX_POINTS))
 
-#     # Render the appropriate template based on question type
-#     if question.question_type == 'crossword':
-#         crossword = question.crossword
-#         context = {
-#             'question': question,
-#             'grid': crossword.grid,
-#             'across_clues': crossword.across_clues,
-#             'down_clues': crossword.down_clues,
-#             'leaderboard': Leaderboard.objects.all().order_by('-points'),
-#         }
-#         return render(request, 'quiz/crossword.html', context)
+        if question.question_type == 'mcq':
+            selected_choice = get_object_or_404(Choice, id=request.POST.get('choice'))
+            UserResponse.objects.create(user=request.user, question=question, selected_choice=selected_choice)
+            if selected_choice.is_correct:
+                update_leaderboard_points(request.user, points)
+        else:
+            user_answer = request.POST.get('answer')
+            UserResponse.objects.create(user=request.user, question=question, answer_text=user_answer)
+            if user_answer == question.correct_answer:
+                update_leaderboard_points(request.user, points)
 
-#     context = {
-#         'question': question,
-#         'leaderboard': Leaderboard.objects.all().order_by('-points')
-#     }
-#     return render(request, 'quiz/question.html', context)
+    next_question = questions[question_index + 1] if question_index + 1 < len(questions) else None
 
-# # Display the leaderboard after quiz completion
-# @login_required
-# def quiz_finished(request):
-#     leaderboard = Leaderboard.objects.all().order_by('-points')
-#     return render(request, 'quiz/finished.html', {'leaderboard': leaderboard})
+    leaderboard_entry = Leaderboard.objects.filter(user=request.user).first()
 
-# # Update leaderboard points based on how fast the user answered
-# def update_leaderboard_points(user, points):
-#     leaderboard_entry, created = Leaderboard.objects.get_or_create(user=user)
-#     leaderboard_entry.points += points
-#     leaderboard_entry.save()
+    if leaderboard_entry is None:
+        leaderboard_entry = Leaderboard.objects.create(user=request.user, points=0)
+
+    context = {
+        'question': question,
+        'time_remaining': time_remaining+10,
+        'next_question': next_question,
+        'correct_answer': question.correct_answer,
+        'explanation': question.explanation,
+        'points': leaderboard_entry.points
+    }
+    return render(request, 'quiz/question.html', context)
+
+
+@login_required
+def leaderboard(request):
+    leaderboard = Leaderboard.objects.all().order_by('-points')
+    return render(request, 'quiz/leaderboard.html', {'leaderboard': leaderboard})
+
+@login_required
+def quiz_finished(request):
+    leaderboard = Leaderboard.objects.all().order_by('-points')
+    return render(request, 'quiz/finished.html', {'leaderboard': leaderboard})
+
+def update_leaderboard_points(user, points):
+    leaderboard_entry, created = Leaderboard.objects.get_or_create(user=user, defaults={'points': 0})
+    leaderboard_entry.points += points
+    leaderboard_entry.save()

@@ -18,6 +18,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('', include('teams.urls')),
-    path('quiz/', include('quiz.urls')),
+    path('quiz/', include(('quiz.urls', 'quiz'), namespace='quiz')),  # Add namespace here
     path('admin/', admin.site.urls),
 ]

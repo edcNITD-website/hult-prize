@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+  Quiz
+{% endblock title %}
+{% block css %}
+<style>
+  #preloader {
+    background-color: white;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    z-index: 100;
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+  }
+  .burger {
+    position: absolute;
+    right: 15px;
+  }
+</style>
+{% endblock css %} 
+
+{% block body %}
+<!-- preloader -->
+<div id="preloader">
+  <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script> 
+  <dotlottie-player src="https://lottie.host/8ae3c606-6f7b-4e53-ab1a-4b7a7b1beed6/eVbvolOi7R.json" background="transparent" speed="1" style="width: 250px; height: 250px;" loop autoplay></dotlottie-player>
+</div>
+
+<main class="container">
+  <div class="text-center my-5">
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script> 
+    <dotlottie-player 
+      src="https://lottie.host/2c90c1fd-c349-4642-97cf-78b0d40c85c3/3cc9MswiRj.json" 
+      background="transparent" 
+      speed="1" 
+      style="width: 100%; height: auto; max-width: 500px;" 
+      loop autoplay>
+    </dotlottie-player>
+  </div>
+</main>
+{% endblock body %}

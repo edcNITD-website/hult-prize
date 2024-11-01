@@ -94,9 +94,8 @@
 {% endblock css %}
 {% block body %}
 <div class="finished-page">
-    <h1 class="leaderboard-heading">Quiz Finished!</h1>
+    <h1 class="leaderboard-heading">Leaderboard</h1>
 
-    <p>Thanks for participating!</p>
     <div class="leaderboard-container">
         <table class="leaderboard">
             <!-- <thead>
@@ -126,6 +125,7 @@
                 </tr> -->
             </tbody>
         </table>
+        <a href="javascript:window.history.back();" class="leaderboard-link">back <span class="arrow">→</span></a>
     </div>
 </div>
 {% endblock body %}

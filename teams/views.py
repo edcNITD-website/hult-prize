@@ -212,7 +212,7 @@ def handleLogin(request):
             messages.error(request, 'Wrong password or username')
             return redirect('/login')
         login(request, user)
-        messages.warning(request, 'Team formation will start soon')
+        #messages.warning(request, 'Team formation will start soon')
         if Team.objects.filter(user=request.user).first().is_leader == False:
             return redirect('/')
         else:
