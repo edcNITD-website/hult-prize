@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Quiz Finished{% endblock title %}
+{% block title %}Leaderboard{% endblock title %}
 
 {% block css %}
 <style>
@@ -11,7 +11,7 @@
         background-image: url('https://images.unsplash.com/photo-1554050857-c84a8abdb5e2?q=80&w=1527&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
         background-size: cover;
         background-repeat: no-repeat;
-        animation: scrollDown 120s linear forwards;
+        animation: scrollDown 100s linear infinite alternate;
         /* background-color: black; */
     }
 
@@ -26,8 +26,8 @@
     }
 
     .finished-page {
-        height: 90vh;
-        /* margin-top: 150px; */
+        min-height: 90vh;
+        padding-top: 90px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -42,6 +42,7 @@
     .leaderboard-heading {
         font-family: "Prompt";
         font-size: 2.5rem;
+        margin-top: 100px;
     }
 
     .leaderboard {
@@ -86,14 +87,37 @@
             width: 70vw;
         }
 
-        .position, .points {
+        .position,
+        .points {
             width: 70px;
         }
+    }
+
+    .leaderboard-link {
+        color: white;
+        text-decoration: none;
+        transition: text-decoration 0.3s ease;
+        /* position: relative;
+        right: 90px; */
+    }
+
+    .leaderboard-link:hover {
+        text-decoration: underline;
+    }
+
+    .arrow {
+        display: inline-block;
+        transition: transform 0.3s ease;
+    }
+
+    .leaderboard-link:hover .arrow {
+        transform: translateX(10px);
     }
 </style>
 {% endblock css %}
 {% block body %}
 <div class="finished-page">
+    <a href="javascript:window.history.back();" class="leaderboard-link">return <span class="arrow">→</span></a>
     <h1 class="leaderboard-heading">Leaderboard</h1>
 
     <div class="leaderboard-container">
@@ -109,7 +133,7 @@
                 {% for entry in leaderboard %}
                 <tr>
                     <td class="position" >#{{ forloop.counter }}</td>
-                    <td class="username" {% if forloop.first %}style="background-image: linear-gradient(90deg, #FF8E00, #FFE400);"{%endif%}{% if foorloop.counter == 2 %}style="background-image: linear-gradient(120deg, #c4c4c4,  #e8e8e8,  #c7c7c7);"{% endif %}>{{ entry.user.username }}</td>
+                    <td class="username" {% if forloop.first %}style="background-image: linear-gradient(90deg, #FF8E00, #FFE400);"{% elif foorloop.counter == 2 %}style="background-image: linear-gradient(120deg, #c4c4c4,  #e8e8e8,  #c7c7c7);"{% endif %}>{{ entry.user.username }}</td>
                     <td class="points">{{ entry.points }}</td>
                 </tr>
                 {% endfor %}
@@ -125,7 +149,6 @@
                 </tr> -->
             </tbody>
         </table>
-        <a href="javascript:window.history.back();" class="leaderboard-link">back <span class="arrow">→</span></a>
     </div>
 </div>
 {% endblock body %}

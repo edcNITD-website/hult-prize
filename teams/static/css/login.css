@@ -31,7 +31,7 @@
 
   margin: 0;
   position: absolute;
-  top: 50%;
+  top: 55%;
   left: 50%;
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
@@ -49,14 +49,15 @@
 }
 .wrapper .title-text {
   display: flex;
-  width: 200%;
+  justify-content: center;
+  width: 100%;
 }
 .wrapper .title {
-  width: 50%;
   font-size: 35px;
   font-weight: 600;
   text-align: center;
   margin-bottom: 7px;
+  margin-top: 7px;
   /* transition: all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55); */
 }
 .wrapper .slide-controls {
@@ -264,7 +265,7 @@ form .btn input[type="submit"] {
 
 @media only screen and (max-width: 545px) {
   .wrapper {
-    width: 305px;
+    width: 90vw;
     padding: 20px;
   }
   .title.login {

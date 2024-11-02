@@ -7,7 +7,8 @@ from datetime import datetime, timedelta
 import pytz
 
 IST = pytz.timezone('Asia/Kolkata')
-QUIZ_START_TIME = IST.localize(datetime(2024, 11, 1, 19, 30, 0))  # Set Time for the Quiz 
+QUIZ_START_TIME = IST.localize(datetime(2024, 11, 2, 19, 5, 0)) 
+QUIZ_END_TIME = IST.localize(datetime(2024, 11, 2, 19, 36, 0)) # Set Time for the Quiz 
 QUESTION_DURATION = 90  # Set question duration in seconds
 MAX_POINTS = 100  # Set the Points
 
@@ -38,11 +39,13 @@ def start_quiz(request):
         })
 
     first_question = get_next_question(request.user)
+    if QUIZ_END_TIME < current_time or not first_question:
+        return redirect('quiz_finished')
     if first_question:
         return redirect('quiz:display_question', question_id=first_question.id)
     else:
         return redirect('quiz_finished')
-
+    
 @login_required
 def display_question(request, question_id):
     question = get_object_or_404(Question, id=question_id)
@@ -51,9 +54,11 @@ def display_question(request, question_id):
 
     question_start_time = QUIZ_START_TIME + timedelta(seconds=QUESTION_DURATION * question_index)
     time_remaining = max(0, QUESTION_DURATION - int((timezone.now() - question_start_time).total_seconds()))
+    
+    next_question = questions[question_index + 1] if question_index + 1 < len(questions) else None
 
-    if time_remaining == 0:
-        next_question = questions[question_index + 1] if question_index + 1 < len(questions) else None
+    time_is_up = (time_remaining == 0)
+    if time_is_up:
         if next_question:
             return redirect('quiz:display_question', question_id=next_question.id)
         else:
@@ -70,30 +75,40 @@ def display_question(request, question_id):
         else:
             user_answer = request.POST.get('answer')
             UserResponse.objects.create(user=request.user, question=question, answer_text=user_answer)
-            if user_answer == question.correct_answer:
+            if user_answer.lower().replace(" ", "") == question.correct_answer.lower().replace(" ", ""):
                 update_leaderboard_points(request.user, points)
 
     next_question = questions[question_index + 1] if question_index + 1 < len(questions) else None
+
 
     leaderboard_entry = Leaderboard.objects.filter(user=request.user).first()
 
     if leaderboard_entry is None:
         leaderboard_entry = Leaderboard.objects.create(user=request.user, points=0)
 
+    leaderboard = Leaderboard.objects.all().order_by('-points')
+    user_rank = list(leaderboard).index(leaderboard_entry) + 1
+
     context = {
         'question': question,
-        'time_remaining': time_remaining+10,
+        'time_remaining': time_remaining,
         'next_question': next_question,
         'correct_answer': question.correct_answer,
         'explanation': question.explanation,
-        'points': leaderboard_entry.points
-    }
+        'rank': user_rank     
+        }
     return render(request, 'quiz/question.html', context)
 
 
-@login_required
+# @login_required
 def leaderboard(request):
     leaderboard = Leaderboard.objects.all().order_by('-points')
+    ranked_leaderboard = [
+        {'user': entry.user, 'points': entry.points, 'rank': i + 1}
+        for i, entry in enumerate(leaderboard)
+    ]
+    current_user_entry = next((entry for entry in ranked_leaderboard if entry['user'] == request.user), None)
+    user_rank = current_user_entry['rank'] if current_user_entry else None
     return render(request, 'quiz/leaderboard.html', {'leaderboard': leaderboard})
 
 @login_required

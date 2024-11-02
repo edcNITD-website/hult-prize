@@ -4,6 +4,8 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;800;900&family=Poppins:wght@400;600;800&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;800;900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Teko:wght@300..700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
+
 
     .question-page {
         height: 100vh;
@@ -11,6 +13,7 @@
         justify-content: center;
         align-items: center;
         color: white;
+        flex-direction: column;
     }
 
     .question-container {
@@ -39,13 +42,6 @@
         cursor: not-allowed;
     }
 
-    #countdown {
-        font-size: 20px;
-        margin-bottom: 10px;
-        font-weight: 700;
-        color: gold;
-    }
-
     #countdown.flashing {
         color: red;
         animation: flash 1s steps(2) infinite;
@@ -64,30 +60,22 @@
         gap: 10px;
         width: 70vw;
         padding-bottom: 20px;
+
     }
 
     .choice {
         padding: 10px;
-        /* border: 2px solid grey; */
         background-color: white;
         color: black;
-        font-family: "Prompt";
         border-radius: 10px;
-        /* box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); */
         cursor: pointer;
         font-size: 1.25rem;
-    }
-
-    .choice:hover {
-        border-color: black;
     }
 
     .submit-answer {
         border: none;
         background-color: #e6007f;
         cursor: pointer;
-        padding: 5px;
-        font-size: large;
         padding: 10px 30px;
         border-radius: 20px;
         color: white;
@@ -99,25 +87,10 @@
     }
 
     body {
-        /* /* background-image: url('https://wallpaperaccess.com/full/1092611.jpg'); */
         background-image: url('https://images.unsplash.com/photo-1554050857-c84a8abdb5e2?q=80&w=1527&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
         background-size: cover;
         background-repeat: no-repeat;
-        animation: scrollDown 120s linear forwards;
-        /* background-color: black; */
     }
-
-    @keyframes scrollDown {
-        from {
-            background-position: top center;
-        }
-
-        to {
-            background-position: bottom center;
-        }
-    }
-
-
 
     @media (max-width: 600px) {
         .question-container {
@@ -150,6 +123,7 @@
         color: white;
         text-decoration: none;
         transition: text-decoration 0.3s ease;
+        font-family: "Prompt";
     }
 
     .leaderboard-link:hover {
@@ -176,14 +150,38 @@
     .question-text {
         font-family: "Prompt";
         font-weight: 800;
+        margin: 5px 20px;
     }
 
+
     .timer {
-        font-size: 0.1rem;
+        font-size: 1.10rem;
+        padding: 5px 20px;
+        border-radius: 5px;
+        backdrop-filter: blur(19px) saturate(200%);
+        -webkit-backdrop-filter: blur(19px) saturate(200%);
+        background-color: rgba(0, 0, 0, 0.62);
+        border-radius: 12px;
+        border: 1px solid rgba(209, 213, 219, 0.3);
+        font-family: "Orbitron";
     }
-    .answer-section * {
-        font-family: "Roboto";
-        }
+
+    .answer-section {
+        max-width: 800px;
+        padding: 40px;
+        border-radius: 10px;
+
+        backdrop-filter: blur(0px) saturate(200%);
+        -webkit-backdrop-filter: blur(0px) saturate(100%);
+        background-color: rgba(0, 0, 0, 0.623);
+        border-radius: 12px;
+        border: 1px solid rgba(209, 213, 219, 0.5);
+        color: white;
+
+        font-family: "Prompt";
+        margin-bottom: 50px;
+    }
+
 </style>
 {% endblock css %}
 
@@ -191,12 +189,13 @@
 <main class="question-page">
     <div class="question-container">
         <h1 class="question-text">{{ question.question_text }}</h1>
-        <div id="countdown" class="timer">{{ time_remaining }} SECONDS</div> <!-- Countdown timer -->
+        <div id="countdown" class="timer">⏲️ {{ time_remaining }}sec</div> <!-- Countdown timer -->
+
 
         {% if question.question_type == 'mcq' %}
         <form id="question-form" method="post">
             {% csrf_token %}
-            <input type="hidden" name="time_remaining" id="time_remaining" value="{{ time_remaining }}">
+            <input type="hidden" name="time_remaining" value="{{ time_remaining }}">
             <div class="choice-container">
                 {% for choice in question.choices.all %}
                 <label class="choice">
@@ -213,26 +212,27 @@
         {% elif question.question_type == 'text' %}
         <form id="question-form" method="post">
             {% csrf_token %}
+
             <input type="hidden" name="time_remaining" id="time_remaining" value="{{ time_remaining }}">
-            <textarea name="answer" style="width: 100%; padding: 10px; border-radius: 10px; font-size: 1.1rem;" oninput="enableSubmitButton()" required></textarea><br>
+            <textarea name="answer" style="width: 100%; padding: 10px; border-radius: 10px; font-size: 1.1rem;"
+                oninput="enableSubmitButton()" required></textarea><br>
             <button class="submit-answer" id="submit-button" type="submit" enabled>Submit Answer</button>
         </form>
         {% endif %}
 
         <!-- Correct answer and explanation sections, initially hidden -->
-        <div id="correct-answer-section" class="answer-section" style="display: none;">
-            <h3>Current Points:<span style="color: gold">{{points}}</span></h3>
-            <h3>Correct Answer:</h3>
-            <p>{{ correct_answer }}</p>
-            <h3>Explanation:</h3>
-            <p>{{ explanation }}</p>
-        </div>
+    </div>
+    <div id="correct-answer-section" class="answer-section" style="display: none;">
+        <h3>Your Timer is up. This is the Explanation for previous question</h3>
+        <h3>Current Rank:<span style="color: gold"> {{rank}}</span></h3>
+        <h3>Correct Answer:</h3>
+        <p>{{ correct_answer }}</p>
+        <h3>Explanation:</h3>
+        <p>{{ explanation }}</p>
     </div>
 </main>
 
-
 <script>
-    // Countdown Timer
     let timeRemaining = {{ time_remaining }};
     const countdownElement = document.getElementById('countdown');
     const correctAnswerSection = document.getElementById('correct-answer-section');
@@ -241,25 +241,22 @@
     const interval = setInterval(() => {
         if (timeRemaining <= 0) {
             clearInterval(interval);
-            // Show the correct answer and explanation
             correctAnswerSection.style.display = 'block';
             submitButton.disabled = true; // Disable the submit button
 
-            // Delay redirection to the next question for 5 seconds
             setTimeout(() => {
                 {% if next_question %}
-                    window.location.href = "{% url 'quiz:display_question' next_question.id %}";
+                window.location.href = "{% url 'quiz:display_question' next_question.id %}";
                 {% else %}
-                    window.location.href = "{% url 'quiz:quiz_finished' %}";
+                window.location.href = "{% url 'quiz:quiz_finished' %}";
                 {% endif %}
-            }, 5000);
+            }, 30000);
         } else {
-            countdownElement.textContent = `${timeRemaining--} SECONDS`;
+            countdownElement.textContent = `⏲️ ${timeRemaining--}s`;
         }
     }, 1000);
 
     function enableSubmitButton() {
-        const submitButton = document.getElementById('submit-button');
         const radioButtons = document.querySelectorAll('input[name="choice"]');
         const textarea = document.querySelector('textarea[name="answer"]');
 
@@ -270,16 +267,16 @@
     }
 
     // Prevent multiple submissions
-    document.getElementById('question-form').addEventListener('submit', function (event) {
-        document.getElementById('submit-button').disabled = true;  // Disable the button to prevent multiple submissions
+    document.getElementById('question-form').addEventListener('submit', function () {
+        submitButton.disabled = true; // Disable the button to prevent multiple submissions
     });
-
     // Prevent the browser back button
     window.history.pushState(null, null, window.location.href);
     window.onpopstate = function () {
         window.history.go(1);
     };
-    
+
+
 </script>
 
 {% endblock body %}
