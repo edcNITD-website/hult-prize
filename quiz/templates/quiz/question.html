@@ -188,7 +188,7 @@
 {% block body %}
 <main class="question-page">
     <div class="question-container">
-        <h1 class="question-text">{{ question.question_text }}</h1>
+        <h1 class="question-text">{{ question.question_text|safe }}</h1>
         <div id="countdown" class="timer">⏲️ {{ time_remaining }}sec</div> <!-- Countdown timer -->
 
 
@@ -223,7 +223,7 @@
         <!-- Correct answer and explanation sections, initially hidden -->
     </div>
     <div id="correct-answer-section" class="answer-section" style="display: none;">
-        <h3>Your Timer is up. This is the Explanation for previous question</h3>
+        <h3>Your Time is up!</h3>
         <h3>Current Rank:<span style="color: gold"> {{rank}}</span></h3>
         <h3>Correct Answer:</h3>
         <p>{{ correct_answer }}</p>
@@ -250,7 +250,7 @@
                 {% else %}
                 window.location.href = "{% url 'quiz:quiz_finished' %}";
                 {% endif %}
-            }, 30000);
+            }, 10000);
         } else {
             countdownElement.textContent = `⏲️ ${timeRemaining--}s`;
         }
@@ -275,7 +275,6 @@
     window.onpopstate = function () {
         window.history.go(1);
     };
-
 
 </script>
 

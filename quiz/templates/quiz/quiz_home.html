@@ -213,7 +213,7 @@ Welcome to Quiz
         </div>
         <p>Ignite your entrepreneurial spirit with Hult Spark, an exciting online quiz event centered around the Hult Prize and the world of entrepreneurship!</p>
         <div class="button-container">
-            <a href="https://edcnitd.co.in/"><button class="quiz-start secondary-button">Our Website</button></a>
+            <a href="{% url 'leaderboard' %}"><button class="quiz-start secondary-button">Leaderboard</button></a>
             <form action="{% url 'start_quiz' %}" method="get">
                 <button type="submit" class="quiz-start">Start Quiz</button>
             </form>
