@@ -3,6 +3,12 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
+class RegistrationsOpen(models.Model):
+    is_open = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "Registrations Open: " + str(self.is_open)
+    
 class Team(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     auth_token = models.CharField(max_length=100)

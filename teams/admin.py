@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Team, TeamMember, Faq, Speaker, UnverifiedTeamMember, SpeakersFaq
+from .models import *
 
 # Register your models here.
-admin.site.register((Team, TeamMember, Faq, Speaker, UnverifiedTeamMember, SpeakersFaq))
+admin.site.register((RegistrationsOpen,Team, TeamMember, Faq, Speaker, UnverifiedTeamMember, SpeakersFaq))

@@ -14,128 +14,131 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils.encoding import force_bytes, force_text
 from django.shortcuts import HttpResponse, redirect, render
-from .models import Team, TeamMember, Faq, Speaker, UnverifiedTeamMember, SpeakersFaq
+from .models import *
 from datetime import datetime
 from django.core.mail import send_mail
 
+def is_registration_open():
+    registration_status = RegistrationsOpen.objects.first()
+    return registration_status and registration_status.is_open
 
 def home(request):
     return render(request, 'home.html')
 
 def team(request):
-    messages.warning(request, 'Team formation will start soon')
     if request.user.is_authenticated and Team.objects.filter(user=request.user).first().is_leader == False:
-        return redirect('/')
+        return redirect('/join-team')
     if request.user.is_authenticated:
-        return redirect('/')
+        return redirect('/create-team')
     else:
         return redirect('/')
 
 def createTeam(request):
     if request.method == "POST":
-        # Registration closed
-        messages.warning(request, 'Team formation will start soon')
-        return redirect('/')
-        #
-        team_name = request.POST.get('team_name')
-        if team_name == '':
-            messages.error(request, 'Team name is required')
-            return redirect('/create-team')
-        update_team_name = Team.objects.filter(user=request.user).first()
-        update_team_name.team_name = team_name
-        update_team_name.save()
-        fname1 = request.POST.get('fname-1')
-        lname1 = request.POST.get('lname-1')
-        email1 = request.POST.get('email-1').strip()
-        phone1 = request.POST.get('phone-1')
-        fname2 = request.POST.get('fname-2')
-        lname2 = request.POST.get('lname-2')
-        email2 = request.POST.get('email-2').strip()
-        phone2 = request.POST.get('phone-2')
-        fname3 = request.POST.get('fname-3')
-        lname3 = request.POST.get('lname-3')
-        email3 = request.POST.get('email-3').strip()
-        phone3 = request.POST.get('phone-3')
-        teamKey = Team.objects.filter(user=request.user).first()
-        if ((email1 == '' and email2 == '' and email3 == '') or (phone1 == '' and phone2 == '' and phone3 == '')):
-            messages.warning(request, 'Team deleted. Now you can join other team or create again')
-            TeamMember.objects.filter(team=teamKey).all().delete()
-            is_team_leader = Team.objects.filter(user=request.user).first()
-            is_team_leader.is_leader = False
-            is_team_leader.save()
+            # Registration closed
+        if not is_registration_open():
+            messages.warning(request, 'Registration is now closed')
             return redirect('/join-team')
-        if ((email1 != '' and (email1 == email2 or email1 == email3)) or (email2 != '' and (email2 == email1 or email2 == email3)) or (email3 != '' and (email3 == email1 or email3 == email2)) or (email1 == teamKey.user.email or email2 == teamKey.user.email or email3 == teamKey.user.email)):
-            messages.error(request, 'Email cannot be same')
+        else:
+            team_name = request.POST.get('team_name')
+            if team_name == '':
+                messages.error(request, 'Team name is required')
+                return redirect('/create-team')
+            update_team_name = Team.objects.filter(user=request.user).first()
+            update_team_name.team_name = team_name
+            update_team_name.save()
+            fname1 = request.POST.get('fname-1')
+            lname1 = request.POST.get('lname-1')
+            email1 = request.POST.get('email-1').strip()
+            phone1 = request.POST.get('phone-1')
+            fname2 = request.POST.get('fname-2')
+            lname2 = request.POST.get('lname-2')
+            email2 = request.POST.get('email-2').strip()
+            phone2 = request.POST.get('phone-2')
+            fname3 = request.POST.get('fname-3')
+            lname3 = request.POST.get('lname-3')
+            email3 = request.POST.get('email-3').strip()
+            phone3 = request.POST.get('phone-3')
+            teamKey = Team.objects.filter(user=request.user).first()
+            if ((email1 == '' and email2 == '' and email3 == '') or (phone1 == '' and phone2 == '' and phone3 == '')):
+                messages.warning(request, 'Team deleted. Now you can join other team or create again')
+                TeamMember.objects.filter(team=teamKey).all().delete()
+                is_team_leader = Team.objects.filter(user=request.user).first()
+                is_team_leader.is_leader = False
+                is_team_leader.save()
+                return redirect('/join-team')
+            if ((email1 != '' and (email1 == email2 or email1 == email3)) or (email2 != '' and (email2 == email1 or email2 == email3)) or (email3 != '' and (email3 == email1 or email3 == email2)) or (email1 == teamKey.user.email or email2 == teamKey.user.email or email3 == teamKey.user.email)):
+                messages.error(request, 'Email cannot be same')
+                return redirect('/create-team')
+            already = TeamMember.objects.filter(team=teamKey).all()
+            index = 1
+            for i in already:
+                if len(i.email) != 0 and index == 1:
+                    email1 = ''
+                if len(i.email) != 0 and index == 2:
+                    email2 = ''
+                if len(i.email) != 0 and index == 3:
+                    email3 = ''
+                index += 1
+            if email1 != '':
+                token = str(uuid.uuid4())
+                subject = f'Invitation to Join Team {team_name} - Hult Prize'
+                message = f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the link to join - https://hult.edcnitd.co.in/leader-invitation/{token} \n\nWith Regards,\nTeam Entrepreneurship Development Cell (EDC NITD)'
+                recipient_list = [email1]
+
+                context = {'link':f'https://hult.edcnitd.co.in/leader-invitation/{token}','request':f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the button to join','button_name':"Join",'subject':subject}
+                html_message = render_to_string('sendemail.html',context)
+                plain_message = strip_tags(html_message)
+
+                email = EmailMultiAlternatives(subject,plain_message,settings.EMAIL_HOST_USER,recipient_list)
+                email.attach_alternative(html_message, 'text/html')
+                email.send()
+                #send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
+                unverified1 = UnverifiedTeamMember(team=teamKey, first_name=fname1, last_name=lname1, email=email1, phone_no=phone1, token=token)
+                unverified1.save()
+            if email2 != '':
+                token = str(uuid.uuid4())
+                subject = f'Invitation to Join Team {team_name} - Hult Prize'
+                message = f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the link to join - https://hult.edcnitd.co.in/leader-invitation/{token} \n\nWith Regards,\nTeam Entrepreneurship Development Cell (EDC NITD)'
+                recipient_list = [email2]
+
+                context = {'link':f'https://hult.edcnitd.co.in/leader-invitation/{token}','request':f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the button to join','button_name':"Join",'subject':subject}
+                html_message = render_to_string('sendemail.html',context)
+                plain_message = strip_tags(html_message)
+
+                email = EmailMultiAlternatives(subject,plain_message,settings.EMAIL_HOST_USER,recipient_list)
+                email.attach_alternative(html_message, 'text/html')
+                email.send()
+                #send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
+                unverified2 = UnverifiedTeamMember(team=teamKey, first_name=fname2, last_name=lname2, email=email2, phone_no=phone2, token=token)
+                unverified2.save()
+            if email3 != '':
+                token = str(uuid.uuid4())
+                subject = f'Invitation to Join Team {team_name} - Hult Prize'
+                message = f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the link to join - https://hult.edcnitd.co.in/leader-invitation/{token} \n\nWith Regards,\nTeam Entrepreneurship Development Cell (EDC NITD)'
+                recipient_list = [email3]
+
+                context = {'link':f'https://hult.edcnitd.co.in/leader-invitation/{token}','request':f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the button to join','button_name':"Join",'subject':subject}
+                html_message = render_to_string('sendemail.html',context)
+                plain_message = strip_tags(html_message)
+
+                email = EmailMultiAlternatives(subject,plain_message,settings.EMAIL_HOST_USER,recipient_list)
+                email.attach_alternative(html_message, 'text/html')
+                email.send()
+                #send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
+                unverified3 = UnverifiedTeamMember(team=teamKey, first_name=fname3, last_name=lname3, email=email3, phone_no=phone3, token=token)
+                unverified3.save()
+            is_team_leader = Team.objects.filter(user=request.user).first()
+            is_team_leader.is_leader = True
+            is_team_leader.save()
+            messages.success(request, 'Invitation to join has been sent to the submitted email/s')
+            messages.warning(request, 'After the invitation has been accepted, it will be visible here')
             return redirect('/create-team')
-        already = TeamMember.objects.filter(team=teamKey).all()
-        index = 1
-        for i in already:
-            if len(i.email) != 0 and index == 1:
-                email1 = ''
-            if len(i.email) != 0 and index == 2:
-                email2 = ''
-            if len(i.email) != 0 and index == 3:
-                email3 = ''
-            index += 1
-        if email1 != '':
-            token = str(uuid.uuid4())
-            subject = f'Invitation to Join Team {team_name} - Hult Prize'
-            message = f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the link to join - https://hult.edcnitd.co.in/leader-invitation/{token} \n\nWith Regards,\nTeam Entrepreneurship Development Cell (EDC NITD)'
-            recipient_list = [email1]
-
-            context = {'link':f'https://hult.edcnitd.co.in/leader-invitation/{token}','request':f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the button to join','button_name':"Join",'subject':subject}
-            html_message = render_to_string('sendemail.html',context)
-            plain_message = strip_tags(html_message)
-
-            email = EmailMultiAlternatives(subject,plain_message,settings.EMAIL_HOST_USER,recipient_list)
-            email.attach_alternative(html_message, 'text/html')
-            email.send()
-            #send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
-            unverified1 = UnverifiedTeamMember(team=teamKey, first_name=fname1, last_name=lname1, email=email1, phone_no=phone1, token=token)
-            unverified1.save()
-        if email2 != '':
-            token = str(uuid.uuid4())
-            subject = f'Invitation to Join Team {team_name} - Hult Prize'
-            message = f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the link to join - https://hult.edcnitd.co.in/leader-invitation/{token} \n\nWith Regards,\nTeam Entrepreneurship Development Cell (EDC NITD)'
-            recipient_list = [email2]
-
-            context = {'link':f'https://hult.edcnitd.co.in/leader-invitation/{token}','request':f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the button to join','button_name':"Join",'subject':subject}
-            html_message = render_to_string('sendemail.html',context)
-            plain_message = strip_tags(html_message)
-
-            email = EmailMultiAlternatives(subject,plain_message,settings.EMAIL_HOST_USER,recipient_list)
-            email.attach_alternative(html_message, 'text/html')
-            email.send()
-            #send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
-            unverified2 = UnverifiedTeamMember(team=teamKey, first_name=fname2, last_name=lname2, email=email2, phone_no=phone2, token=token)
-            unverified2.save()
-        if email3 != '':
-            token = str(uuid.uuid4())
-            subject = f'Invitation to Join Team {team_name} - Hult Prize'
-            message = f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the link to join - https://hult.edcnitd.co.in/leader-invitation/{token} \n\nWith Regards,\nTeam Entrepreneurship Development Cell (EDC NITD)'
-            recipient_list = [email3]
-
-            context = {'link':f'https://hult.edcnitd.co.in/leader-invitation/{token}','request':f'Invitation to join {request.user.first_name} {request.user.last_name}\'s team. Click on the button to join','button_name':"Join",'subject':subject}
-            html_message = render_to_string('sendemail.html',context)
-            plain_message = strip_tags(html_message)
-
-            email = EmailMultiAlternatives(subject,plain_message,settings.EMAIL_HOST_USER,recipient_list)
-            email.attach_alternative(html_message, 'text/html')
-            email.send()
-            #send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
-            unverified3 = UnverifiedTeamMember(team=teamKey, first_name=fname3, last_name=lname3, email=email3, phone_no=phone3, token=token)
-            unverified3.save()
-        is_team_leader = Team.objects.filter(user=request.user).first()
-        is_team_leader.is_leader = True
-        is_team_leader.save()
-        messages.success(request, 'Invitation to join has been sent to the submitted email/s')
-        messages.warning(request, 'After the invitation has been accepted, it will be visible here')
-        return redirect('/create-team')
     if request.user.is_authenticated:
-        # Registration closed
-        messages.warning(request, 'Team Formation will start soon')
-        return redirect('/')
-        #
+        if not is_registration_open():
+            messages.warning(request, 'Registration is now closed')
+            return redirect('/join-team')
+        
         team = Team.objects.filter(user=request.user).first()
         team_members = TeamMember.objects.filter(team=team).all()
         return render(request, 'create-team.html', { 'team_members': team_members, 'team': team })
@@ -212,17 +215,16 @@ def handleLogin(request):
             messages.error(request, 'Wrong password or username')
             return redirect('/login')
         login(request, user)
-        #messages.warning(request, 'Team formation will start soon')
         if Team.objects.filter(user=request.user).first().is_leader == False:
-            return redirect('/')
+            return redirect('/join-team')
         else:
-            return redirect('/')
+            return redirect('/create-team')
     else:
         if request.user.is_authenticated:
             if Team.objects.filter(user=request.user).first().is_leader == False:
-                return redirect('/')
+                return redirect('/join-team')
             else:
-                return redirect('/')
+                return redirect('/create-team')
         else:
             return render(request, 'login.html')
 
@@ -236,53 +238,53 @@ def handleLogout(request):
 
 def handleSignUp(request):
     if request.method == 'POST':
-        '''# Registration closed
-        messages.warning(request, 'Registration is now closed')
-        return redirect('/')
-        #'''
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        password1 = request.POST.get('password1')
-        password2 = request.POST.get('password2')
-        phone_no = request.POST.get('phone-no')
-
-        try:
-            email_domain = email.split('@')[1]
-            pattern = r"^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9.-]+\.)?nitdgp\.ac\.in$"
-            if not re.match(pattern, email):
-                messages.warning(request, 'Please use a valid nitdgp.ac.in email address.')
-                return redirect('/signup')
-            if User.objects.filter(username=username).first():
-                messages.warning(request, 'Username is already taken')
-                return redirect('/signup')
-            if User.objects.filter(email=email).first():
-                messages.warning(request, 'Email is already taken.')
-                return redirect('/signup')
-            if password1 != password2:
-                messages.warning(request, 'Passwords do not match')
-                return redirect('/signup')
-            user =  User.objects.create_user(username, email, password1)
-            user.first_name = first_name
-            user.last_name = last_name
-            user.save()
-            auth_token = str(uuid.uuid4())
-            team = Team(user=user, auth_token=auth_token, leader_phone_no=phone_no, is_leader=False)
-            team.save()
-            sendMail(email, auth_token)
-            return redirect('/token')
-        except Exception as e:
-            messages.error(request, 'Error occured')
+        # Registration closed
+        if not is_registration_open():
+            messages.warning(request, 'Registration is now closed')
             return redirect('/')
-    else:
-        if request.user.is_authenticated:
-            return redirect('/create-team')
         else:
-            '''# Registration closed
+            username = request.POST.get('username')
+            email = request.POST.get('email')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+            phone_no = request.POST.get('phone-no')
+
+            try:
+                email_domain = email.split('@')[1]
+                pattern = r"^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9.-]+\.)?nitdgp\.ac\.in$"
+                if not re.match(pattern, email):
+                    messages.warning(request, 'Please use a valid nitdgp.ac.in email address.')
+                    return redirect('/signup')
+                if User.objects.filter(username=username).first():
+                    messages.warning(request, 'Username is already taken')
+                    return redirect('/signup')
+                if User.objects.filter(email=email).first():
+                    messages.warning(request, 'Email is already taken.')
+                    return redirect('/signup')
+                if password1 != password2:
+                    messages.warning(request, 'Passwords do not match')
+                    return redirect('/signup')
+                user =  User.objects.create_user(username, email, password1)
+                user.first_name = first_name
+                user.last_name = last_name
+                user.save()
+                auth_token = str(uuid.uuid4())
+                team = Team(user=user, auth_token=auth_token, leader_phone_no=phone_no, is_leader=False)
+                team.save()
+                sendMail(email, auth_token)
+                return redirect('/token')
+            except Exception as e:
+                messages.error(request, 'Error occured')
+                return redirect('/')
+    else:
+        if not is_registration_open():
             messages.warning(request, 'Registration is now closed')
             return redirect('/login')
-            #'''
+        if request.user.is_authenticated:
+            return redirect('/create-team')
+        else:    
             return render(request, 'signup.html')
         
 
@@ -294,15 +296,46 @@ def sendMail(email, token):
     message = f'Please click the link to verify your account https://hult.edcnitd.co.in/verify/{token} \n\nWith Regards,\nTeam Entrepreneurship Development Cell (EDC NITD)'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [email]
-    context={'link':f'https://hult.edcnitd.co.in/verify/{token}','request':f'Please click the link to verify your account','button_name':"Verify Email",'subject':subject}
+    context = {
+        'link': f'https://hult.edcnitd.co.in/verify/{token}',
+        'request': 'Please click the link to verify your account',
+        'button_name': "Verify Email",
+        'subject': subject,
+        'pre_registration_link': 'https://www.hultprize.org/startup-pre-registration-is-now-open/'
+    }
 
-    html_message = render_to_string('sendemail.html',context)
+    html_message = render_to_string('sendemail.html', context)
     plain_message = strip_tags(html_message)
 
-    msg = EmailMultiAlternatives(subject,plain_message,email_from,recipient_list)
+    msg = EmailMultiAlternatives(subject, plain_message, email_from, recipient_list)
     msg.attach_alternative(html_message, 'text/html')
     msg.send()
     #send_mail(subject, message, None, recipient_list)
+
+def send_registration_reminder(user):
+    token = str(uuid.uuid4())
+    subject = 'Reminder: Complete Your Registration for Hult Prize'
+    recipient_list = [user.email]
+
+    context = {
+        'link': f'https://hult.edcnitd.co.in/join-team',
+        'request': f'Dear {user.first_name}, please complete your registration for the Hult Prize. Click on the button to complete your registration.',
+        'button_name': "Complete Registration",
+        'subject': subject,
+        'pre_registration_link': 'https://www.hultprize.org/startup-pre-registration-is-now-open/'
+
+    }
+    html_message = render_to_string('sendemail.html', context)
+    plain_message = strip_tags(html_message)
+
+    email = EmailMultiAlternatives(subject, plain_message, settings.EMAIL_HOST_USER, recipient_list)
+    email.attach_alternative(html_message, 'text/html')
+    email.send()
+
+def send_reminders_to_users():
+    users_to_remind = User.objects.filter(is_active=True)
+    for user in users_to_remind:
+        send_registration_reminder(user)
 
 def verify(request, auth_token):
     try:
@@ -400,66 +433,66 @@ def speakers(request):
 
 def joinTeam(request):
     if request.method == 'POST':
-        # Registration closed
-        messages.warning(request, 'Team Formation will start soon')
-        return redirect('/')
-        #
-        if Team.objects.filter(user=request.user).first().is_leader == False and Team.objects.filter(user = request.user).__len__ == 1:
-            auth_token = request.POST.get('auth_token')
-            team = Team.objects.filter(auth_token=auth_token).first()
-            team_from = Team.objects.filter(user=request.user).first()
-            team_leader_email = team.user.email
-            if team_from.can_request == True:
-                subject = f'Request to join your team - {request.user.first_name + " " + request.user.last_name}'
-                message = f'{request.user.first_name + " " + request.user.last_name} would like to join your team.\nClick on the link to add - https://hult.edcnitd.co.in/accept-invitation/{Team.objects.filter(user=request.user).first().auth_token} \n\nWith Regards,\nTeam Entrepreneurship Development Cell (EDC NITD)'
-                email_from = settings.EMAIL_HOST_USER
-                recipient_list = [team_leader_email]
-
-                context={'link':f'https://hult.edcnitd.co.in/accept-invitation/{Team.objects.filter(user=request.user).first().auth_token}','request':f'{request.user.first_name + " " + request.user.last_name} would like to join your team.\nClick on the link to add','button_name':"Accept Invite",'subject':subject}
-
-                html_message = render_to_string('sendemail.html',context)
-                plain_message = strip_tags(html_message)
-                email = EmailMultiAlternatives(subject,plain_message,email_from,recipient_list)
-                email.attach_alternative(html_message, 'text/html')
-                email.send()
-                #send_mail(subject, message, email_from, recipient_list)
-                team_from.can_request = False
-                team_from.can_request_timestamp = datetime.now()
-                team_from.request_sent_to = auth_token
-                team_from.save()
-                messages.success(request, 'Your request has been sent')
-                return redirect('/join-team')
-            
-            else:
-                team_timestamp = team_from.can_request_timestamp.date()
-                date_now = datetime.now().date()
-                delta = date_now - team_timestamp
-                if delta.days >= 1:
+        if not is_registration_open():
+            messages.warning(request, 'Registration is now closed')
+            return redirect('/join-team')
+        else:
+            if Team.objects.filter(user=request.user).first().is_leader == False and Team.objects.filter(user = request.user).__len__ == 1:
+                auth_token = request.POST.get('auth_token')
+                team = Team.objects.filter(auth_token=auth_token).first()
+                team_from = Team.objects.filter(user=request.user).first()
+                team_leader_email = team.user.email
+                if team_from.can_request == True:
                     subject = f'Request to join your team - {request.user.first_name + " " + request.user.last_name}'
                     message = f'{request.user.first_name + " " + request.user.last_name} would like to join your team.\nClick on the link to add - https://hult.edcnitd.co.in/accept-invitation/{Team.objects.filter(user=request.user).first().auth_token} \n\nWith Regards,\nTeam Entrepreneurship Development Cell (EDC NITD)'
                     email_from = settings.EMAIL_HOST_USER
                     recipient_list = [team_leader_email]
+
                     context={'link':f'https://hult.edcnitd.co.in/accept-invitation/{Team.objects.filter(user=request.user).first().auth_token}','request':f'{request.user.first_name + " " + request.user.last_name} would like to join your team.\nClick on the link to add','button_name':"Accept Invite",'subject':subject}
+
                     html_message = render_to_string('sendemail.html',context)
                     plain_message = strip_tags(html_message)
-
                     email = EmailMultiAlternatives(subject,plain_message,email_from,recipient_list)
                     email.attach_alternative(html_message, 'text/html')
                     email.send()
                     #send_mail(subject, message, email_from, recipient_list)
                     team_from.can_request = False
                     team_from.can_request_timestamp = datetime.now()
+                    team_from.request_sent_to = auth_token
                     team_from.save()
-                    messages.success(request, 'Your request to join the team has been sent. Please wait for the leader to accept it')
+                    messages.success(request, 'Your request has been sent')
                     return redirect('/join-team')
-                messages.error(request, 'Request can been sent only once in 24 hours')
-                return redirect('/join-team')
-        else:
-                if Team.objects.filter(user=request.user).first().is_leader == True:
-                    messages.warning(request, 'You are Team Leader so you cannot join other team. Remove all members from your team to be able join other teams')
+                
                 else:
-                    messages.warning(request, 'You are already in a team so you cannot join other team.')
-                return redirect('/join-team')
+                    team_timestamp = team_from.can_request_timestamp.date()
+                    date_now = datetime.now().date()
+                    delta = date_now - team_timestamp
+                    if delta.days >= 1:
+                        subject = f'Request to join your team - {request.user.first_name + " " + request.user.last_name}'
+                        message = f'{request.user.first_name + " " + request.user.last_name} would like to join your team.\nClick on the link to add - https://hult.edcnitd.co.in/accept-invitation/{Team.objects.filter(user=request.user).first().auth_token} \n\nWith Regards,\nTeam Entrepreneurship Development Cell (EDC NITD)'
+                        email_from = settings.EMAIL_HOST_USER
+                        recipient_list = [team_leader_email]
+                        context={'link':f'https://hult.edcnitd.co.in/accept-invitation/{Team.objects.filter(user=request.user).first().auth_token}','request':f'{request.user.first_name + " " + request.user.last_name} would like to join your team.\nClick on the link to add','button_name':"Accept Invite",'subject':subject}
+                        html_message = render_to_string('sendemail.html',context)
+                        plain_message = strip_tags(html_message)
+
+                        email = EmailMultiAlternatives(subject,plain_message,email_from,recipient_list)
+                        email.attach_alternative(html_message, 'text/html')
+                        email.send()
+                        #send_mail(subject, message, email_from, recipient_list)
+                        team_from.can_request = False
+                        team_from.can_request_timestamp = datetime.now()
+                        team_from.save()
+                        messages.success(request, 'Your request to join the team has been sent. Please wait for the leader to accept it')
+                        return redirect('/join-team')
+                    messages.error(request, 'Request can been sent only once in 24 hours')
+                    return redirect('/join-team')
+            else:
+                    if Team.objects.filter(user=request.user).first().is_leader == True:
+                        messages.warning(request, 'You are Team Leader so you cannot join other team. Remove all members from your team to be able join other teams')
+                    else:
+                        messages.warning(request, 'You are already in a team so you cannot join other team.')
+                    return redirect('/join-team')
     else:
         if request.user.is_authenticated:
             teams = Team.objects.exclude(user=request.user)
@@ -502,10 +535,7 @@ def joinTeam(request):
                         'can_request': can_request,
                         'no_of_members': no_of_members
                     })
-            # Registration closed
-            messages.warning(request, 'Team Formation will start soon')
-            
-            #return render(request, 'join-team.html', { 'data': data })
+            return render(request, 'join-team.html', { 'data': data })
         else:
             return redirect('/')
 

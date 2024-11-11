@@ -169,10 +169,11 @@
           <p><a href="{{ link }}" style="text-decoration: none;font-weight: bolder;color: white;" class="button">{{ button_name }}</a></p>
           <p><a href="{{ link }}" style="color: #4691f6; text-decoration: underline;">{{ link }}</a></p>
           
-          <!-- Step 2: Button for pre-registration link with accompanying text link -->
+          {% if pre_registration_link %}
           <p>Step 2: Before proceeding, pre-register for the Hult Prize:</p>
-          <p><a href="https://www.hultprize.org/startup-pre-registration-is-now-open/" style="text-decoration: none; font-weight: bolder; color: white;" class="button">Pre-Register for Hult Prize</a></p>
-          <p><a href="https://www.hultprize.org/startup-pre-registration-is-now-open/" style="color: #4691f6; text-decoration: underline;">https://www.hultprize.org/startup-pre-registration-is-now-open/</a></p>
+          <p><a href="{{ pre_registration_link }}" style="text-decoration: none; font-weight: bolder; color: white;" class="button">Pre-Register for Hult Prize</a></p>
+          <p><a href="{{ pre_registration_link }}" style="color: #4691f6; text-decoration: underline;">{{ pre_registration_link }}</a></p>
+          {% endif %}
           
           <p>Best regards,<br><span style="font-weight: bold;">Team Entrepreneurship Development Cell (EDC NITD)</span></p>
           
