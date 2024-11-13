@@ -36,6 +36,12 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome
     position: fixed;
     right: 15px;
   }
+
+  .team-container {
+    flex-direction: column;
+    margin-top: 100px;
+    height: 60vh;
+  }
   </style>
 {% endblock css %}
 
@@ -60,7 +66,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome
 </div>
 <!--  -->
 
-<div class="container">
+<div class="container team-container">
     
     {% for mt in my_team %}
     <h2 class="my-3 teamName">My Team</h2>

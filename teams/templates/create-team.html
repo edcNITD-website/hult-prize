@@ -1,4 +1,4 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
 {% load static %} 
 {% block title %}Hult Prize - Create Team{% endblock title %}
 {% block css %}
@@ -17,6 +17,12 @@
 }
 input[readonly=""] {
   cursor: not-allowed;
+}
+
+.navbar-buffer {
+  display: block;
+  width: 100%;
+  height: 100px;
 }
 </style>
 
@@ -42,6 +48,9 @@ input[readonly=""] {
   </button>
 </div>
 {% endfor %}
+
+<!-- fix this later juniors -->
+<div class="navbar-buffer">.</div>
 
 <div class="join-team-box container">
   <a href="/join-team">View all Teams</a>
